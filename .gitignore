@@ -1,0 +1,9 @@
+node_modules
+.next
+.next_*
+.env
+.env.local
+.playwright-cli
+
+# OpenNext
+.open-next
