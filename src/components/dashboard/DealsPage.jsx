@@ -18,7 +18,7 @@ export function DealsPage() {
   const [originError, setOriginError] = useState('');
   const [airportMatches, setAirportMatches] = useState([]);
   const [airportSearchLoading, setAirportSearchLoading] = useState(false);
-  const { deals, currentOrigin, loading, error } = useDeals(filter, origin);
+  const { deals, currentOrigin, loading, error, notice, degraded } = useDeals(filter, origin);
 
   useEffect(() => {
     if (profile?.home_airport && origin === 'all') {
@@ -144,6 +144,9 @@ export function DealsPage() {
             AI-detected mispriced flights and hotels, sorted by savings edge.
             {origin !== 'all' ? ` Showing flight deals from ${origin}.` : ' Showing the full network.'}
           </p>
+          {degraded ? (
+            <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-earth-500">Fallback board</p>
+          ) : null}
         </div>
         <div className="flex flex-col gap-3 md:items-end">
           <div className="inline-flex flex-wrap gap-2 rounded-button bg-cream-200 p-1">
@@ -230,6 +233,9 @@ export function DealsPage() {
         </div>
       </div>
 
+      {notice ? (
+        <div className="rounded-card border border-cream-300 bg-cream-100 p-4 text-sm text-earth-700">{notice}</div>
+      ) : null}
       {error ? <div className="rounded-card border border-warning-border bg-warning-light p-4 text-sm text-warning">{error}</div> : null}
 
       {loading ? (

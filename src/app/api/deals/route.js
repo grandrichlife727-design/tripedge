@@ -3,6 +3,14 @@ import { createClient } from '@/lib/supabase/server';
 import { DEALS_FALLBACK, getDealOriginOptions } from '@/components/dashboard/shared';
 import { getPreviewContext } from '@/lib/preview-auth-server';
 
+function filterFallbackDeals(type, currentOrigin) {
+  return DEALS_FALLBACK.filter((deal) => {
+    if (type && type !== 'all' && deal.route_type !== type) return false;
+    if (currentOrigin !== 'all' && deal.route_type !== 'hotel' && deal.origin !== currentOrigin) return false;
+    return true;
+  });
+}
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const type = searchParams.get('type'); // 'flight', 'hotel', or null for all
@@ -10,16 +18,9 @@ export async function GET(request) {
   const preview = getPreviewContext();
 
   if (preview) {
-    let rows = DEALS_FALLBACK.slice();
     const currentOrigin = origin || preview.profile.home_airport || 'all';
-    if (type && type !== 'all') {
-      rows = rows.filter((deal) => deal.route_type === type);
-    }
-    if (currentOrigin !== 'all') {
-      rows = rows.filter((deal) => deal.route_type === 'hotel' || deal.origin === currentOrigin);
-    }
     return Response.json({
-      deals: rows,
+      deals: filterFallbackDeals(type, currentOrigin),
       currentOrigin,
       originOptions: getDealOriginOptions(DEALS_FALLBACK),
       preview: true,
@@ -48,7 +49,14 @@ export async function GET(request) {
   const { data, error } = await query.order('savings_pct', { ascending: false }).limit(20);
 
   if (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({
+      deals: filterFallbackDeals(type, currentOrigin),
+      currentOrigin,
+      originOptions: getDealOriginOptions(DEALS_FALLBACK),
+      degraded: true,
+      notice: 'Live deal data is temporarily unavailable. Showing the curated fallback board instead.',
+      debug_reason: error.message,
+    });
   }
 
   const { data: routeOrigins } = await supabase

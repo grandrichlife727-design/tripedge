@@ -8,11 +8,15 @@ export function useDeals(type = 'all', origin = 'all') {
   const [originOptions, setOriginOptions] = useState(['all']);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [notice, setNotice] = useState(null);
+  const [degraded, setDegraded] = useState(false);
 
   useEffect(() => {
     async function fetchDeals() {
       setLoading(true);
       setError(null);
+      setNotice(null);
+      setDegraded(false);
       try {
         const params = new URLSearchParams();
         if (type !== 'all') params.set('type', type);
@@ -24,6 +28,8 @@ export function useDeals(type = 'all', origin = 'all') {
         setDeals(data.deals || []);
         setCurrentOrigin(data.currentOrigin || origin || 'all');
         setOriginOptions(Array.isArray(data.originOptions) && data.originOptions.length ? data.originOptions : ['all']);
+        setNotice(data.notice || null);
+        setDegraded(Boolean(data.degraded));
       } catch (err) {
         setError(err.message);
       }
@@ -32,5 +38,5 @@ export function useDeals(type = 'all', origin = 'all') {
     fetchDeals();
   }, [type, origin]);
 
-  return { deals, currentOrigin, originOptions, loading, error };
+  return { deals, currentOrigin, originOptions, loading, error, notice, degraded };
 }
