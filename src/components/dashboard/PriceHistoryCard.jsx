@@ -78,6 +78,7 @@ export function PriceHistoryCard({
       try {
         const params = new URLSearchParams({ destination, type: routeType });
         if (origin) params.set('origin', origin);
+        if (hasPreviewTierCookie()) params.set('preview', '1');
         const res = await fetch(`/api/price-history?${params.toString()}`, { cache: 'no-store' });
         const data = await res.json();
         if (!active) return;

@@ -7,12 +7,13 @@ export async function GET(request) {
   const origin = searchParams.get('origin');
   const destination = searchParams.get('destination');
   const routeType = searchParams.get('type') || 'flight';
+  const previewRequested = searchParams.get('preview') === '1';
 
   if (!destination || (routeType === 'flight' && !origin)) {
     return Response.json({ error: routeType === 'flight' ? 'origin and destination are required' : 'destination is required' }, { status: 400 });
   }
 
-  const preview = getPreviewContext();
+  const preview = previewRequested ? { tier: 'premium' } : getPreviewContext();
   if (preview) {
     const previewData = getPreviewPriceHistory();
     const history = previewData.history || [];
