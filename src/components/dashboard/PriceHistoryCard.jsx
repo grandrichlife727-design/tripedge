@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { BarChart3 } from 'lucide-react';
+import { getPreviewPriceHistory } from '@/lib/preview-auth';
 
 function buildFallbackPoints(basePrice) {
   const offsets = [58, 42, 34, 28, 18, 6, -4, -10, -16, -24, -32, -26, -18, -14, -8, -2, 4, 12, 18, 10, 3, -6, -12, -9, -15, -22, -28, -34, -40, -46];
@@ -57,7 +58,17 @@ export function PriceHistoryCard({
     let active = true;
 
     async function load() {
-      if ((previewMode || hasPreviewTierCookie()) && seededHistory.length) {
+      if (previewMode && seededHistory.length) {
+        setSource('preview');
+        setLoading(false);
+        return;
+      }
+
+      if (hasPreviewTierCookie()) {
+        const previewData = getPreviewPriceHistory();
+        const rows = Array.isArray(previewData?.history) ? previewData.history : [];
+        setHistory(rows.length ? mapHistoryRows(rows) : buildFallbackPoints(currentPrice));
+        setStats(previewData?.stats || buildStatsFromHistory(rows));
         setSource('preview');
         setLoading(false);
         return;
