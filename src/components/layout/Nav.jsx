@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { Logo } from '@/components/ui/Logo';
 
@@ -28,17 +28,23 @@ function navLinkClass(active) {
 
 export function Nav({ mode = 'marketing', tier = 'free', preview = false }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const dashboard = mode === 'dashboard';
   const links = dashboard ? DASHBOARD_LINKS : MARKETING_LINKS;
-  const ctaHref = dashboard ? (preview ? '/auth/preview-exit' : '/pricing') : '/app';
+  const previewQuery = preview || searchParams.get('preview') === '1' ? '?preview=1' : '';
+  const withPreview = (href) => {
+    if (!previewQuery || href.startsWith('/auth/preview-exit')) return href;
+    return href.includes('?') ? `${href}&preview=1` : `${href}${previewQuery}`;
+  };
+  const ctaHref = dashboard ? (preview ? '/auth/preview-exit' : '/pricing') : withPreview('/app');
   const ctaLabel = dashboard ? (preview ? 'Exit Preview' : 'Upgrade') : 'Open App';
   const tierLabel = useMemo(() => String(tier || 'free').toUpperCase(), [tier]);
 
   return (
     <nav className="sticky top-0 z-50 border-b border-cream-300/90 bg-cream-50/88 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3 md:px-8 md:py-4">
-        <Link href={dashboard ? '/app' : '/'} className="shrink-0">
+        <Link href={dashboard ? withPreview('/app') : '/'} className="shrink-0">
           <Logo size={dashboard ? 18 : 20} />
         </Link>
 
@@ -46,7 +52,7 @@ export function Nav({ mode = 'marketing', tier = 'free', preview = false }) {
           {links.map((link) => {
             const active = pathname === link.href;
             return (
-              <Link key={link.href} href={link.href} className={`text-sm ${navLinkClass(active)}`}>
+              <Link key={link.href} href={withPreview(link.href)} className={`text-sm ${navLinkClass(active)}`}>
                 {link.label}
               </Link>
             );
@@ -84,7 +90,7 @@ export function Nav({ mode = 'marketing', tier = 'free', preview = false }) {
             {links.map((link) => {
               const active = pathname === link.href;
               return (
-                <Link key={link.href} href={link.href} onClick={() => setOpen(false)} className={`rounded-button px-3 py-2 text-sm ${active ? 'bg-cream-100 font-semibold text-earth-900' : 'text-earth-700'}`}>
+                <Link key={link.href} href={withPreview(link.href)} onClick={() => setOpen(false)} className={`rounded-button px-3 py-2 text-sm ${active ? 'bg-cream-100 font-semibold text-earth-900' : 'text-earth-700'}`}>
                   {link.label}
                 </Link>
               );
