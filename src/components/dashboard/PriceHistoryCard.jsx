@@ -32,6 +32,11 @@ function mapHistoryRows(rows = []) {
   return rows.map((row) => ({ label: formatMonth(row.month), value: Number(row.avg_price || 0) }));
 }
 
+function hasPreviewTierCookie() {
+  if (typeof document === 'undefined') return false;
+  return document.cookie.split(';').some((cookie) => cookie.trim().startsWith('tripedge_preview_tier='));
+}
+
 export function PriceHistoryCard({
   origin,
   destination,
@@ -52,7 +57,9 @@ export function PriceHistoryCard({
     let active = true;
 
     async function load() {
-      if (previewMode && seededHistory.length) {
+      if ((previewMode || hasPreviewTierCookie()) && seededHistory.length) {
+        setSource('preview');
+        setLoading(false);
         return;
       }
 
