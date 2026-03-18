@@ -5,9 +5,11 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const requestedTier = String(searchParams.get('tier') || 'free').toLowerCase();
   const tier = ALLOWED_TIERS.has(requestedTier) ? requestedTier : 'free';
-  const redirectTo = searchParams.get('redirect') || '/app';
+  const requestedRedirect = searchParams.get('redirect') || '/app';
+  const redirectUrl = new URL(requestedRedirect, request.url);
+  redirectUrl.searchParams.set('preview', '1');
 
-  const response = NextResponse.redirect(new URL(redirectTo, request.url));
+  const response = NextResponse.redirect(redirectUrl);
   response.cookies.set(PREVIEW_COOKIE, tier, {
     httpOnly: false,
     sameSite: 'lax',

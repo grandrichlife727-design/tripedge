@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Badge } from '@/components/ui/Badge';
 import { Shimmer } from '@/components/ui/Shimmer';
 import { useDeals } from '@/hooks/useDeals';
@@ -11,8 +12,10 @@ import { findAirportMatches, getAirportByCode } from '@/lib/airports';
 
 export function DealsPage() {
   const { profile } = useUser();
-  const previewSuffix = profile?.isPreview ? '?preview=1' : '';
-  const plannerPreviewSuffix = profile?.isPreview ? '&preview=1' : '';
+  const searchParams = useSearchParams();
+  const previewActive = profile?.isPreview || searchParams.get('preview') === '1';
+  const previewSuffix = previewActive ? '?preview=1' : '';
+  const plannerPreviewSuffix = previewActive ? '&preview=1' : '';
   const [filter, setFilter] = useState('all');
   const [origin, setOrigin] = useState('all');
   const [customOrigin, setCustomOrigin] = useState('');
