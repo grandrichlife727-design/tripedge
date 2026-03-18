@@ -11,6 +11,8 @@ import { findAirportMatches, getAirportByCode } from '@/lib/airports';
 
 export function DealsPage() {
   const { profile } = useUser();
+  const previewSuffix = profile?.isPreview ? '?preview=1' : '';
+  const plannerPreviewSuffix = profile?.isPreview ? '&preview=1' : '';
   const [filter, setFilter] = useState('all');
   const [origin, setOrigin] = useState('all');
   const [customOrigin, setCustomOrigin] = useState('');
@@ -253,7 +255,7 @@ export function DealsPage() {
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {rows.map((deal) => (
             <article key={getDealId(deal)} className="card-hover overflow-hidden rounded-card border border-cream-300 bg-white shadow-card">
-              <Link href={`/app/deals/${encodeURIComponent(getDealId(deal))}`} className="block">
+              <Link href={`/app/deals/${encodeURIComponent(getDealId(deal))}${previewSuffix}`} className="block">
                 <img src={deal.image_url || DEALS_FALLBACK[0].image_url} alt={deal.destination} className="h-44 w-full object-cover" />
               </Link>
               <div className="p-5">
@@ -261,7 +263,7 @@ export function DealsPage() {
                   <Badge text={deal.urgency === 'hot' ? '🔥 Hot Deal' : deal.urgency === 'warm' ? 'Warm' : 'Watch'} type={urgencyBadgeType(deal.urgency)} />
                   <span className="rounded-md bg-successLight px-2 py-1 text-xs font-bold text-success">-{Math.round(Number(deal.savings_pct || 0))}%</span>
                 </div>
-                <Link href={`/app/deals/${encodeURIComponent(getDealId(deal))}`} className="block">
+                <Link href={`/app/deals/${encodeURIComponent(getDealId(deal))}${previewSuffix}`} className="block">
                   <h2 className="text-xl font-semibold text-earth-900 transition-colors hover:text-teal">{formatDealTitle(deal)}</h2>
                 </Link>
                 <p className="mt-1 text-sm text-earth-600">{deal.route_type === 'flight' ? deal.carrier : deal.destination} · {deal.travel_dates || 'Live market'}</p>
@@ -276,13 +278,13 @@ export function DealsPage() {
                 </div>
                 <div className="mt-5 flex flex-wrap gap-3">
                   <Link
-                    href={`/app/deals/${encodeURIComponent(getDealId(deal))}`}
+                    href={`/app/deals/${encodeURIComponent(getDealId(deal))}${previewSuffix}`}
                     className="inline-flex items-center justify-center rounded-button bg-earth-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-earth-800"
                   >
                     View forecast
                   </Link>
                   <Link
-                    href={`/app/planner?query=${encodeURIComponent(buildPlannerQueryFromDeal(deal))}&source=deal&deal=${encodeURIComponent(getDealId(deal))}`}
+                    href={`/app/planner?query=${encodeURIComponent(buildPlannerQueryFromDeal(deal))}&source=deal&deal=${encodeURIComponent(getDealId(deal))}${plannerPreviewSuffix}`}
                     className="inline-flex items-center justify-center rounded-button border border-cream-300 bg-cream-50 px-4 py-3 text-sm font-semibold text-earth-900 transition hover:border-teal hover:text-teal"
                   >
                     Plan this trip

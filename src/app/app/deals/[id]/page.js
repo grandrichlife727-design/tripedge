@@ -24,8 +24,8 @@ function buildForecastSummary(deal) {
   };
 }
 
-export default async function DealDetailPage({ params }) {
-  const preview = getPreviewContext();
+export default async function DealDetailPage({ params, searchParams }) {
+  const preview = searchParams?.preview === '1' ? { tier: 'premium' } : getPreviewContext();
   let deal = null;
   const previewPriceHistory = preview ? getPreviewPriceHistory() : null;
 
