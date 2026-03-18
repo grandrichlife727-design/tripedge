@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { BarChart3 } from 'lucide-react';
+import { getPreviewPriceHistory } from '@/lib/preview-auth';
 
 function buildFallbackPoints(basePrice) {
   const offsets = [58, 42, 34, 28, 18, 6, -4, -10, -16, -24, -32, -26, -18, -14, -8, -2, 4, 12, 18, 10, 3, -6, -12, -9, -15, -22, -28, -34, -40, -46];
@@ -16,7 +17,7 @@ function formatMonth(value) {
   }
 }
 
-export function PriceHistoryCard({ origin, destination, routeType = 'flight', currentPrice }) {
+export function PriceHistoryCard({ origin, destination, routeType = 'flight', currentPrice, previewMode = false }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [source, setSource] = useState('live');
@@ -26,6 +27,23 @@ export function PriceHistoryCard({ origin, destination, routeType = 'flight', cu
     let active = true;
 
     async function load() {
+      if (previewMode) {
+        const previewData = getPreviewPriceHistory();
+        const rows = Array.isArray(previewData?.history) ? previewData.history : [];
+        setHistory(rows.length ? rows.map((row) => ({ label: formatMonth(row.month), value: Number(row.avg_price || 0) })) : buildFallbackPoints(currentPrice));
+        setStats(previewData?.stats || {
+          latest_price: rows.length ? Number(rows[rows.length - 1]?.avg_price || 0) : null,
+          avg_price: rows.length ? Math.round(rows.reduce((sum, row) => sum + Number(row.avg_price || 0), 0) / rows.length) : null,
+          low_price: rows.length ? Math.min(...rows.map((row) => Number(row.min_price || row.avg_price || 0))) : null,
+          high_price: rows.length ? Math.max(...rows.map((row) => Number(row.max_price || row.avg_price || 0))) : null,
+          observations: rows.reduce((sum, row) => sum + Number(row.sample_count || 0), 0),
+          last_updated: rows[rows.length - 1]?.updated_at || null,
+        });
+        setSource('preview');
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       try {
         const params = new URLSearchParams({ destination, type: routeType });
@@ -57,7 +75,7 @@ export function PriceHistoryCard({ origin, destination, routeType = 'flight', cu
     return () => {
       active = false;
     };
-  }, [origin, destination, routeType, currentPrice]);
+  }, [origin, destination, routeType, currentPrice, previewMode]);
 
   const points = useMemo(() => history.length ? history : buildFallbackPoints(currentPrice), [history, currentPrice]);
   const min = Math.min(...points.map((point) => point.value));

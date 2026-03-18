@@ -68,6 +68,7 @@ export default async function DealDetailPage({ params }) {
           destination={deal.destination}
           routeType={deal.route_type || 'flight'}
           currentPrice={currentPrice || 300}
+          previewMode={Boolean(preview)}
         />
 
         <section className="space-y-5">
