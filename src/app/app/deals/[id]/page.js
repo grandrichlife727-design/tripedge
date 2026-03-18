@@ -1,11 +1,14 @@
 import Link from 'next/link';
 import { ArrowRight, CalendarDays, BarChart3, ShieldCheck, Wallet } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
+import { getPreviewPriceHistory } from '@/lib/preview-auth';
 import { getPreviewContext } from '@/lib/preview-auth-server';
 import { buildPlannerQueryFromDeal, DEALS_FALLBACK, formatDealTitle, urgencyBadgeType } from '@/components/dashboard/shared';
 import { Badge } from '@/components/ui/Badge';
 import { DealActionPanel } from '@/components/dashboard/DealActionPanel';
 import { PriceHistoryCard } from '@/components/dashboard/PriceHistoryCard';
+
+export const dynamic = 'force-dynamic';
 
 function buildForecastSummary(deal) {
   const current = Number(deal.current_price || 0);
@@ -24,6 +27,7 @@ function buildForecastSummary(deal) {
 export default async function DealDetailPage({ params }) {
   const preview = getPreviewContext();
   let deal = null;
+  const previewPriceHistory = preview ? getPreviewPriceHistory() : null;
 
   if (!preview) {
     const supabase = createClient();
@@ -69,6 +73,9 @@ export default async function DealDetailPage({ params }) {
           routeType={deal.route_type || 'flight'}
           currentPrice={currentPrice || 300}
           previewMode={Boolean(preview)}
+          initialHistory={previewPriceHistory?.history || null}
+          initialStats={previewPriceHistory?.stats || null}
+          initialSource={preview ? 'preview' : null}
         />
 
         <section className="space-y-5">
