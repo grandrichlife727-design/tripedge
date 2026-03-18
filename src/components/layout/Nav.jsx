@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { Logo } from '@/components/ui/Logo';
 
@@ -28,11 +28,18 @@ function navLinkClass(active) {
 
 export function Nav({ mode = 'marketing', tier = 'free', preview = false }) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
+  const [previewParamActive, setPreviewParamActive] = useState(false);
   const dashboard = mode === 'dashboard';
   const links = dashboard ? DASHBOARD_LINKS : MARKETING_LINKS;
-  const previewQuery = preview || searchParams.get('preview') === '1' ? '?preview=1' : '';
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    setPreviewParamActive(params.get('preview') === '1');
+  }, [pathname]);
+
+  const previewQuery = preview || previewParamActive ? '?preview=1' : '';
   const withPreview = (href) => {
     if (!previewQuery || href.startsWith('/auth/preview-exit')) return href;
     return href.includes('?') ? `${href}&preview=1` : `${href}${previewQuery}`;
